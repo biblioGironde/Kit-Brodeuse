@@ -29,13 +29,12 @@ module.exports = {
     {
       name: '@electron-forge/maker-deb',
       config: {
-        icon: './public/icons/256x256.png'
-      },
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {
-        icon: './public/icons/256x256.png'
+        options: {
+          name: 'kit-brodeuse',
+          productName: 'Kit Brodeuse',
+          bin: 'kit-brodeuse',
+          icon: './public/icons/256x256.png'
+        }
       },
     },
     {
