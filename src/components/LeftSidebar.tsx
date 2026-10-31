@@ -5,6 +5,7 @@ import { ConnectionPrompt } from "./ConnectionPrompt";
 import { FileUpload } from "./FileUpload";
 import { PatternSummaryCard } from "./PatternSummaryCard";
 import { ProgressMonitor } from "./ProgressMonitor";
+import { DigitizerCard } from "./Digitizer/DigitizerCard";
 
 export function LeftSidebar() {
   const { isConnected } = useMachineStore(
@@ -31,6 +32,9 @@ export function LeftSidebar() {
 
       {/* Pattern File - Show during upload stage (before pattern is uploaded) */}
       {isConnected && !patternUploaded && <FileUpload />}
+
+      {/* Kit Brodeuse : préparation d'un motif depuis un SVG (avant envoi) */}
+      {!patternUploaded && <DigitizerCard />}
 
       {/* Compact Pattern Summary - Show after upload (during sewing stages) */}
       {isConnected && patternUploaded && hasPattern && <PatternSummaryCard />}

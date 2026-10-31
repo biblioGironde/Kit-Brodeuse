@@ -5,7 +5,15 @@ import { encodeStitchesToPen } from "../pen/encoder";
 // Message types from main thread
 export type WorkerMessage =
   | { type: "INITIALIZE"; pyodideIndexURL?: string; pystitchWheelURL?: string }
-  | { type: "CONVERT_PES"; fileData: ArrayBuffer; fileName: string };
+  | { type: "CONVERT_PES"; fileData: ArrayBuffer; fileName: string }
+  | {
+      type: "WRITE_EMBROIDERY";
+      requestId: number;
+      /** [x, y, code] en 0,1 mm — code : 0 point, 1 saut, 2 coupe, 3 changement de couleur */
+      stitches: number[][];
+      colors: string[];
+      format: string;
+    };
 
 // Response types to main thread
 export type WorkerResponse =
@@ -44,7 +52,9 @@ export type WorkerResponse =
         };
       };
     }
-  | { type: "CONVERT_ERROR"; error: string };
+  | { type: "CONVERT_ERROR"; error: string }
+  | { type: "WRITE_COMPLETE"; requestId: number; data: Uint8Array }
+  | { type: "WRITE_ERROR"; requestId: number; error: string };
 
 console.log("[PatternConverterWorker] Worker script loaded");
 
@@ -393,6 +403,55 @@ for i, stitch in enumerate(pattern.stitches):
   }
 }
 
+/**
+ * Écrit un fichier de broderie (PES, DST, JEF, EXP, VP3…) avec pystitch
+ * à partir des points générés par le module de préparation.
+ */
+async function writeEmbroidery(
+  requestId: number,
+  stitches: number[][],
+  colors: string[],
+  format: string,
+) {
+  if (!pyodide) throw new Error("Pyodide not initialized");
+  const fmt = format.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const outPath = `/tmp/export.${fmt}`;
+  try {
+    pyodide.globals.set("_kb_stitches", pyodide.toPy(stitches));
+    pyodide.globals.set("_kb_colors", pyodide.toPy(colors));
+    pyodide.globals.set("_kb_path", outPath);
+    await pyodide.runPythonAsync(`
+import pystitch
+from pystitch.EmbConstant import STITCH, JUMP, TRIM, COLOR_CHANGE, END
+_p = pystitch.EmbPattern()
+for _c in _kb_colors:
+    _p.add_thread(pystitch.EmbThread(_c))
+_map = {0: STITCH, 1: JUMP, 2: TRIM, 3: COLOR_CHANGE}
+for _x, _y, _code in _kb_stitches:
+    _p.add_stitch_absolute(_map[int(_code)], _x, _y)
+_p.add_command(END)
+pystitch.write(_p, _kb_path)
+`);
+    const data = pyodide.FS.readFile(outPath) as Uint8Array;
+    try {
+      pyodide.FS.unlink(outPath);
+    } catch {
+      // ignorer
+    }
+    self.postMessage({
+      type: "WRITE_COMPLETE",
+      requestId,
+      data,
+    } as WorkerResponse);
+  } catch (err) {
+    self.postMessage({
+      type: "WRITE_ERROR",
+      requestId,
+      error: err instanceof Error ? err.message : String(err),
+    } as WorkerResponse);
+  }
+}
+
 // Handle messages from main thread
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const message = event.data;
@@ -411,6 +470,15 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
       case "CONVERT_PES":
         console.log("[PatternConverterWorker] Starting PES conversion...");
         await convertPesToPen(message.fileData);
+        break;
+
+      case "WRITE_EMBROIDERY":
+        await writeEmbroidery(
+          message.requestId,
+          message.stitches,
+          message.colors,
+          message.format,
+        );
         break;
 
       default:

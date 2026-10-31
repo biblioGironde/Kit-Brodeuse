@@ -1,9 +1,9 @@
 {
-  "name": "respira",
-  "productName": "Respira",
+  "name": "kit-brodeuse",
+  "productName": "Kit Brodeuse",
   "version": "0.0.0",
-  "description": "Desktop controller for the Brother PP-1 SKiTCH embroidery machine",
-  "author": "jhbruhn <respira@jhbruhn.de>",
+  "description": "Kit Brodeuse (biblio.gironde) : préparation de motifs SVG en broderie et pilotage de la brodeuse Brother PP-1 SKiTCH — basé sur Respira",
+  "author": "biblio.gironde <infos@julien-drochon.net>",
   "private": true,
   "license": "Apache-2.0",
   "main": ".vite/build/main.js",
@@ -87,5 +87,9 @@
     "vite": "^7.2.4",
     "vite-plugin-static-copy": "^3.1.4",
     "vitest": "^4.0.15"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/biblioGironde/Kit-Brodeuse"
   }
 }

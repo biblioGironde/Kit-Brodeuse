@@ -98,7 +98,7 @@ export function AppHeader() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-lg lg:text-xl font-bold text-white leading-tight">
-                  Respira
+                  Kit Brodeuse
                 </h1>
                 {isConnected && machineInfo?.serialNumber && (
                   <Tooltip>

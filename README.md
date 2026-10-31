@@ -1,81 +1,87 @@
-# Respira
+# Kit Brodeuse — biblio.gironde
 
-Respira is an pattern transmission and embroidery monitoring application for the Brother PP-1 SKiTCH embroidery machine.
-It replaces the Artspira app and allows the user to transmit .PES patterns directly from a computer without having to go through the app.
-This allows the user to operate the embroidery machine fully offline and from the comfortable screen of a computer.
+Application web et de bureau (Windows, macOS, Linux) pour les ateliers broderie du réseau des bibliothèques de la Gironde.
 
-![](./docs/main_screenshot.png)
+Elle réunit deux outils :
 
-## Installation
+1. **Préparer un motif** — un module de numérisation qui transforme un dessin vectoriel (SVG) en points de broderie, sur le modèle de l'extension [Ink/Stitch](https://inkstitch.org/) pour Inkscape, mais directement dans l'application, sans rien installer d'autre.
+2. **Broder** — le pilotage de la brodeuse **Brother PP-1 SKiTCH** en Bluetooth (envoi du motif, traçage du cadre, suivi de la broderie et des changements de fil), repris de [Respira](https://github.com/jhbruhn/respira) de Jan-Henrik Bruhn.
 
-The latest release of Respira can be downloaded [here](https://github.com/jhbruhn/respira/releases/latest). Choose the appropriate installer for your Operating System.
-Be aware that the macOS release has difficulties because it is neither signed nor notarized by Apple[^1].
-The application will offer updates automatically, at least on Windows.
-On macOS it does not because of the aforementioned issue.
+![Atelier de préparation](docs/preparer-un-motif.png)
 
-If you are using Chrome, Edge or another browser with WebBluetooth capabilities, you can also use it directly in the browser: https://jhbruhn.github.io/respira
+## Utiliser l'application
 
-## Usage
+- **En ligne** (Chrome, Edge ou Opera, pour le Bluetooth) : https://biblioGironde.github.io/Kit-Brodeuse
+- **Application de bureau** : télécharger l'installateur dans les [Releases](https://github.com/biblioGironde/Kit-Brodeuse/releases/latest).
 
-After first starting, you are prompted to connect to your machine.
-Respira will only show Bluetooth devices which are Brother PP-1 machines.
-Respira has a handy step-guide at the top.
-Clicking on the current step will show hints what needs to be done in the current step.
+La préparation des motifs fonctionne dans tous les navigateurs récents, même sans brodeuse : on peut préparer chez soi et télécharger le fichier `.pes`.
 
-### Pairing
+### Déroulé d'un atelier
 
-If you never used Respira with your machine before, you will have to pair your machine with your computer first.
-To do so, head to your operating systems Bluetooth settings, long-press the Bluetooth-Button on your Brother PP-1 until the LED changes its blinking pattern or there is a beep, and then pair your computer with the machine from your operating systems Bluetooth settings.
-Only after this pairing has been done, Respira will be able to successfully connect with your machine.
-Otherwise, the connection will fail silently.
+1. Cliquer sur **Ouvrir l'atelier de préparation**.
+2. **Ouvrir un dessin SVG** (ou glisser-déposer), ou partir d'un exemple : cœur, étoile, livre ouvert, feuille, tête de chat.
+3. Régler la **taille** (bouton *Ajuster au cercle* pour le cercle 100 × 100 mm ou 70 × 70 mm).
+4. Pour chaque objet de la liste (dans l'ordre de broderie) : choisir le type de point et la couleur du fil, déplier ▸ pour les réglages fins. Survoler un objet le surligne dans l'aperçu.
+5. Vérifier avec le **simulateur** (▶) : il montre la broderie point par point.
+6. **Utiliser ce motif** l'envoie dans l'écran de la brodeuse (positionnement, rotation, envoi). Ou **Télécharger** au format PES, DST, JEF, EXP ou VP3 pour une autre machine.
 
-### Homing
+### Préparer son dessin
 
-After startup, the machine has to home itself.
-Remove the hoop and press the accept button.
-The machine will move a bit.
-Afterwards, you can reinsert the hoop.
+- Formes **pleines** (avec remplissage) → *Remplissage* tatami.
+- **Traits** épais (≥ 1,2 mm) → *Satin* ; traits fins → *Point droit*.
+- Une forme avec remplissage **et** contour donne deux objets : le remplissage, puis le contour.
+- Le **texte** doit être converti en chemins (Inkscape : *Chemin › Objet en chemin*) et les **images** vectorisées (*Chemin › Vectoriser un objet matriciel*).
+- Pas de zone de moins de ~1 mm : la machine ne sait pas la broder proprement.
 
-### Upload Pattern
+## Équivalences avec Ink/Stitch
 
-To import and prepare a pattern, click the _Choose PES File_ button and import a PES embroidery pattern.
-Before uploading it, you can move the pattern in the preview window so that it is embroidered at the correct position.
-Upload the pattern using the Upload Pattern button.
+Le module lit et écrit les mêmes paramètres qu'Ink/Stitch (attributs `inkstitch:*` dans le SVG). Un fichier préparé dans Inkscape + Ink/Stitch s'ouvre avec ses réglages ; le bouton **SVG Ink/Stitch** enregistre un SVG qui se rouvre ici ou dans Inkscape.
 
-### Embroidering
+| Ink/Stitch | Kit Brodeuse | Paramètres repris |
+| --- | --- | --- |
+| Remplissage automatique (*auto_fill*) | Remplissage tatami | angle, espacement des rangs, longueur max., décalage, compensation, sous-couche (angle, espacement, retrait) |
+| Colonne satin (*satin_column*, 2 rails) | Satin (2 rails) | espacement zigzag, compensation, sous-couches marche centrale / contour / zigzag |
+| Trait zigzag (*zigzag_stitch*) | Satin le long du trait | largeur = épaisseur du trait |
+| Point droit (*running_stitch*) | Point droit | longueur, répétitions, point triple (*bean stitch*) |
+| Points d'arrêt, *trim_after* | Points d'arrêt, couper le fil après | — |
 
-After the pattern has been uploaded, you can start embroidering.
-First do a mask trace so that the machine can check whether the whole embroidery area is accessible.
-Press the _Start Mask Trace_ button, then press the _Accept_ button on the machine.
-When the mask trace was successful, you can start sewing by pressing the _Start Sewing_ button, and then pressing the _Start/Pause_ button on the machine.
+Non pris en charge pour l'instant : remplissages contour / guidé / méandre / circulaire (remplacés par un tatami, avec un avertissement), lettrage, points croisés, ripple, éléments `clone`. Pour ces cas, préparer le motif dans Inkscape + Ink/Stitch, exporter en `.pes` et l'ouvrir avec **Choose PES File**.
 
-While the machine is embroidering, watch your sewing progress using the live preview in the Pattern Preview pane and know which color to change to from the Color Block list in the Sewing Progress pane.
+## Développement
 
-After the embroidery is done, remove your fabric from the hoop and press the _Accept_ button on the machine to continue with a new job, or repeat the current job by pressing the _Start/Pause_ button again.
+```bash
+npm ci
+npm run web:dev          # webapp en local (http://localhost:5173)
+npm run test:run         # tests
+npm run electron:start   # application de bureau en développement
+npm run electron:make    # installateurs pour le système courant
+```
 
-## Pattern Preparation
+Organisation du module de préparation :
 
-Embroidery software seems to be a niche product and thus is quite expensive.
-But fear not because the great people of [Ink/Stitch built and Inkscape extension](https://inkstitch.org/) which allows you to create embroidery patterns with Free and Open Source software.
-How great is that?
-I think it's great.
-All my tests were done with PES patterns exported from Ink/Stitch.
-In fact, Respira is using their pystitch library to import PES patterns.
+```
+src/digitizer/
+  svgDocument.ts   lecture du SVG : unités → mm, transformations, styles, paramètres inkstitch:*
+  svgPath.ts       analyse de l'attribut d et aplatissement des courbes
+  stitches/        générateurs de points : fill.ts (tatami), satin.ts, running.ts
+  digitize.ts      planification : objets → blocs de couleur, liaisons, coupes, sérialisation
+  svgExport.ts     export SVG compatible Ink/Stitch
+  samples.ts       motifs d'exemple
+src/components/Digitizer/   interface (dialogue, aperçu/simulateur, paramètres)
+```
 
-But PES patterns from other software or downloaded from the internet should work as well.
+L'écriture des fichiers PES/DST/JEF/EXP/VP3 se fait avec la bibliothèque Python `pystitch` (celle d'Ink/Stitch), exécutée dans le navigateur par Pyodide — le même moteur que Respira utilise pour lire les PES.
 
-## Vibe Code Warning
+## Publication (GitHub Actions)
 
-For reasons of fairness and possibly also as a warning, be aware that 99% of the code has been written using LLMs, specifically Claude Code.
+- Chaque push sur `main` lance les tests, puis prépare une **release brouillon** avec les installateurs (Windows, macOS, Linux) et la webapp zippée.
+- **Publier** la release (dans l'onglet Releases) déploie la webapp sur GitHub Pages ainsi que les fichiers de mise à jour automatique.
+- Réglages du dépôt nécessaires : *Settings › Pages › Source : GitHub Actions* ; *Settings › Actions › General › Workflow permissions : Read and write*.
+- Les numéros de version suivent les libellés des pull requests (`fix`, `feature`, `breaking`), voir `CLAUDE.md`.
 
-That does not mean that the code is untested, bad or dysfunctional.
-In fact, LLMs were a great tool for reverse engineering the Bluetooth Protocol and pattern format the Brother PP-1 uses to communicate with Brothers App.
+## Licence et crédits
 
-This project wouldn't have happened without the existence of LLMs.
-So, while LLMs are still being heavily oversold and the circulary economy of the big AI companies is not exactly a healthy market IMO, they do still offer _some_ benefits.
-
-## License
-
-See `LICENSE.md`.
-
-[^1]: To me this is frankly insane. It effectively makes a computer running macOS not a computer that can run general compute anymore, but only applications that were explicitly allowed by Apple. Not only does signing and notarizing the application require the developer to pay a yearly 99€ fee, but it also strips every Apple computer of its generic compute capabilities, unless you know how to circumvent the security measures.
+- Code sous licence **Apache 2.0** (voir `LICENSE.md`), comme Respira.
+- Pilotage de la brodeuse : [Respira](https://github.com/jhbruhn/respira) © Jan-Henrik Bruhn. Le README d'origine est conservé dans `README.respira.md`.
+- Le module de préparation est une réécriture indépendante en TypeScript : il ne reprend pas de code d'Ink/Stitch (GPL v3), seulement les noms de paramètres pour la compatibilité des fichiers. Merci au projet [Ink/Stitch](https://inkstitch.org/) et à sa bibliothèque `pystitch`.
+- Pour garder le dépôt à jour avec Respira : `git remote add upstream https://github.com/jhbruhn/respira && git pull upstream main`.
