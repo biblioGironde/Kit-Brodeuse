@@ -21,7 +21,7 @@ import "./App.css";
 function App() {
   // Set page title with version
   useEffect(() => {
-    document.title = `Respira v${__APP_VERSION__}`;
+    document.title = `Kit Brodeuse v${__APP_VERSION__}`;
   }, []);
 
   // Initialize machine store subscriptions (once on mount)

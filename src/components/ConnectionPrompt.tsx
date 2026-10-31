@@ -72,7 +72,7 @@ export function ConnectionPrompt() {
             <li>
               Download the Desktop app from{" "}
               <a
-                href="https://github.com/jhbruhn/respira/releases/latest"
+                href="https://github.com/biblioGironde/Kit-Brodeuse/releases/latest"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold underline hover:text-warning-900 dark:hover:text-warning-50 transition-colors"

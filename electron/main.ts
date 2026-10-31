@@ -14,7 +14,7 @@ if (started) {
 updateElectronApp({
   updateSource: {
     type: UpdateSourceType.StaticStorage,
-    baseUrl: `https://jhbruhn.github.io/respira/update/${process.platform}/${process.arch}`,
+    baseUrl: `https://biblioGironde.github.io/Kit-Brodeuse/update/${process.platform}/${process.arch}`,
   },
 });
 

@@ -300,6 +300,46 @@ class PatternConverterClient {
     });
   }
 
+  private writeCounter = 0;
+
+  /**
+   * Écrit un fichier de broderie (pes, dst, jef, exp, vp3…) avec pystitch.
+   * `stitches` : [x, y, code] en 0,1 mm (voir module digitizer).
+   */
+  async writeEmbroidery(
+    stitches: number[][],
+    colors: string[],
+    format: string,
+  ): Promise<Uint8Array> {
+    if (this.state !== "ready") await this.initialize();
+    const worker = this.worker;
+    if (!worker) throw new Error("Worker not available");
+    const requestId = ++this.writeCounter;
+    return new Promise<Uint8Array>((resolve, reject) => {
+      const handleMessage = (event: MessageEvent<WorkerResponse>) => {
+        const message = event.data;
+        if (
+          (message.type === "WRITE_COMPLETE" ||
+            message.type === "WRITE_ERROR") &&
+          message.requestId === requestId
+        ) {
+          worker.removeEventListener("message", handleMessage);
+          if (message.type === "WRITE_COMPLETE") resolve(message.data);
+          else reject(new Error(message.error));
+        }
+      };
+      worker.addEventListener("message", handleMessage);
+      const msg: WorkerMessage = {
+        type: "WRITE_EMBROIDERY",
+        requestId,
+        stitches,
+        colors,
+        format,
+      };
+      worker.postMessage(msg);
+    });
+  }
+
   /**
    * Setup worker event listeners
    */

@@ -1,7 +1,7 @@
 module.exports = {
   packagerConfig: {
     asar: true,
-    executableName: 'respira',
+    executableName: 'kit-brodeuse',
     icon: './public/icons/icon'
   },
   rebuildConfig: {},
@@ -9,7 +9,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: 'Respira',
+        name: 'KitBrodeuse',
         setupIcon: './public/icons/icon.ico'
       },
     },
@@ -17,7 +17,7 @@ module.exports = {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
       config: {
-        macUpdateManifestBaseUrl: "https://jhbruhn.github.io/respira/update/darwin/arm64"
+        macUpdateManifestBaseUrl: "https://biblioGironde.github.io/Kit-Brodeuse/update/darwin/arm64"
       }
     },
     {
