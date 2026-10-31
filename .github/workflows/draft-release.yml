@@ -70,6 +70,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -116,7 +117,6 @@ jobs:
         with:
           name: linux-artifacts
           path: |
-            out/make/rpm/x64/*.rpm
             out/make/deb/x64/*.deb
             out/make/AppImage/x64/*.AppImage
 
