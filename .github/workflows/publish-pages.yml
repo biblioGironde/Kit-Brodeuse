@@ -1,18 +1,29 @@
 name: Publish to GitHub Pages
 
+# La webapp est publiée à chaque push sur main (et à la publication d'une release),
+# sans attendre qu'une release soit publiée. Les fichiers de mise à jour automatique
+# des applis de bureau sont repris de la dernière release publiée, s'il y en a une.
+
 on:
+  push:
+    branches: [main]
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   publish-to-pages:
     name: Publish to GitHub Pages
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -21,34 +32,50 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download release assets
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".node-version"
+          cache: "npm"
+
+      - name: Use release version
+        if: github.event_name == 'release'
+        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run web:build -- --base=/${{ github.event.repository.name }}/
+
+      - name: Add auto-update files from the latest published release
         run: |
-          # Create directory structure
-          mkdir -p pages/update/win32/x64
-          mkdir -p pages/update/darwin/arm64
-
-          # Download and extract web build from the release
-          gh release download ${{ github.event.release.tag_name }} --pattern "respira-web-*.zip"
-          unzip -q respira-web-*.zip -d pages/
-
-          # Download Windows auto-update files from the release
-          gh release download ${{ github.event.release.tag_name }} --pattern "*.exe" --dir pages/update/win32/x64
-          gh release download ${{ github.event.release.tag_name }} --pattern "*.nupkg" --dir pages/update/win32/x64
-          gh release download ${{ github.event.release.tag_name }} --pattern "RELEASES" --dir pages/update/win32/x64
-
-          # Download macOS auto-update files from the release
-          gh release download ${{ github.event.release.tag_name }} --pattern "*-darwin-arm64-*.zip" --dir pages/update/darwin/arm64
-          gh release download ${{ github.event.release.tag_name }} --pattern "RELEASES.json" --dir pages/update/darwin/arm64
+          mkdir -p dist/update/win32/x64 dist/update/darwin/arm64
+          TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --json tagName --jq .tagName 2>/dev/null || true)
+          fi
+          if [ -n "$TAG" ]; then
+            gh release download "$TAG" --pattern "*.exe" --dir dist/update/win32/x64 || true
+            gh release download "$TAG" --pattern "*.nupkg" --dir dist/update/win32/x64 || true
+            gh release download "$TAG" --pattern "RELEASES" --dir dist/update/win32/x64 || true
+            gh release download "$TAG" --pattern "*-darwin-arm64-*.zip" --dir dist/update/darwin/arm64 || true
+            gh release download "$TAG" --pattern "RELEASES.json" --dir dist/update/darwin/arm64 || true
+          else
+            echo "Aucune release publiée : pas de fichiers de mise à jour."
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "pages"
+          path: "dist"
 
       - name: Deploy to GitHub Pages
         id: deployment
