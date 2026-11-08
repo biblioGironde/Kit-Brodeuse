@@ -9,6 +9,7 @@ import { LeftSidebar } from "./components/LeftSidebar";
 import { PatternCanvas } from "./components/PatternCanvas";
 import { PatternCanvasPlaceholder } from "./components/PatternCanvasPlaceholder";
 import { BluetoothDevicePicker } from "./components/BluetoothDevicePicker";
+import { RetourTest } from "./components/RetourTest";
 import { transformStitchesRotation } from "./utils/rotationUtils";
 import { encodeStitchesToPen } from "./formats/pen/encoder";
 import { decodePenData } from "./formats/pen/decoder";
@@ -220,6 +221,8 @@ function App() {
         {/* Bluetooth Device Picker (Electron only) */}
         <BluetoothDevicePicker />
       </div>
+
+      <RetourTest />
     </div>
   );
 }
